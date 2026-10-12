@@ -16,7 +16,7 @@ luckproof-verdict/
 │   └── data/              # 시세 수집 (fetch.py) → data/prices.duckdb
 ├── data/          (.gitignore)   # 시세 DB. 스크립트로 재생성. 커밋 금지
 ├── .env           (.gitignore)   # KRX_ID · KRX_PW · CHATKHU_API_KEY. 커밋 금지
-├── .claude/skills/log/    # 로그 작성 스킬 (SKILL.md · TEMPLATE.md · check.py)
+├── .claude/skills/         # log (설계 결정 로그 작성) · export-session (세션 대화 전문 내보내기)
 └── docs/
     ├── ai_log/            # 1층 — AI 대화 전문
     ├── ai_log_선별본/     # 2층 — 서식4 제출용 선별

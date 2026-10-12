@@ -49,7 +49,7 @@ Luckproof Verdict. 2026 KHU AI Challenge(교내 AI 활용 경진대회) "AI 문�
 - README가 A 층만 설명함. B 층(입력 5개, 거부권), 3단계 라벨, 확률 문구를 반영해야 서식3과 서식4가 맞음.
 - README가 `docs/ai-log.md`를 가리키는데 실제 경로는 `docs/ai_log/`. README의 데이터 설명(FinanceDataReader, 상폐 미포함)도 재결정에 맞게 고쳐야 함.
 - 서식4 외부 AI 병행 사유: "ChatKHU는 1단계 문제 정의·설계 토론과 앱의 LLM 호출에 사용. 코드 작성·자료 조사·검증은 Claude Code." 아직 서식4에 안 적음.
-- 2단계부터 작업은 Claude Code. 세션이 끝나면 `python3 scripts/export_session.py ~/.claude/projects/-home-young-dev-luckproof-verdict/<세션ID>.jsonl docs/ai_log/<단계>_대화전문_<날짜>.md`로 대화 전문을 저장한다. `docs/ai_log/2_자료준비.md`는 손으로 쓴 요약본.
+- 2단계부터 작업은 Claude Code. 세션이 끝나면 `/export-session` 스킬로 대화 전문(사용자 발화·AI 답변만)을 `docs/ai_log/<단계>_대화전문_<날짜>.md`에 저장한다. `docs/ai_log/2_자료준비.md`는 손으로 쓴 요약본.
 
 ## 커밋 규칙
 
@@ -61,7 +61,7 @@ Luckproof Verdict. 2026 KHU AI Challenge(교내 AI 활용 경진대회) "AI 문�
 | 경로 | 용도 | 규칙 |
 | --- | --- | --- |
 | `CONTRIBUTING.md` | 폴더 배치와 문서 4층 구분 | 어디에 쓸지 애매하면 여기 |
-| `docs/ai_log/N_*.md` | AI 대화 원본 (단계별. 1단계는 ChatKHU 내보내기, 2단계부터 Claude Code 세션 기록을 `scripts/export_session.py`로 변환해 `N_*_대화전문_날짜.md`로 저장) | 원문 그대로. 편집하지 않음 |
+| `docs/ai_log/N_*.md` | AI 대화 원본 (단계별. 1단계는 ChatKHU 내보내기, 2단계부터 Claude Code 세션 기록을 `/export-session` 스킬로 변환해 `N_*_대화전문_날짜.md`로 저장) | 원문 그대로. 편집하지 않음 |
 | `docs/ai_log_선별본/N_*.md` | 서식4 제출용 선별본 | 요약 블록 + 프롬프트 원문 + 답변 요지 + 내 판단 + 검증 + 버전 변화 |
 | `docs/workflow/N_*.md` | 단계별 할 일과 완료 기준 | 체크리스트 |
 | `docs/log/N.*.md` | 설계 결정의 의도 (왜 그렇게 정했나·버린 후보·미결) | 규약 `docs/log/FORMAT.md`, 스킬 `/log`, 검사 `.claude/skills/log/check.py` |
