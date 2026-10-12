@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""서식 규약 기계 검사 — 사람이 읽고도 빠뜨리는 것만 본다.
+"""Mechanical check of the log convention -- only the things a human reader tends to miss.
 
-규약 본문: docs/log/FORMAT.md (이 스크립트는 규약이 아니다)
-사용: python3 .claude/skills/log/check.py docs/log/1.xxx.md
+The convention itself is docs/log/FORMAT.md; this script is not the convention.
+Usage: python3 .claude/skills/log/check.py docs/log/1.xxx.md
+Section headings, id prefixes and FAIL messages are Korean literals because the log documents are Korean.
 """
 import re
 import sys
@@ -11,20 +12,20 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parents[3]
 LOGS = REPO / "docs" / "log"
 INDEX = REPO / "docs" / "log" / "README.md"
-SECTIONS = ["## 결정", "## 근거", "## 미결"]   # 산출물은 조건부라 뺀다
-KINDS = [("D", "## 결정"), ("U", "## 미결")]   # ID 종류 → 그 ID 가 사는 절
-DEAD_SECTIONS = ["작업 내용", "미결 의사결정"]  # 규약이 폐기한 절
-DEAD_FIELDS = ["성격", "작성"]                  # 규약이 폐기한 머리말 필드
+SECTIONS = ["## 결정", "## 근거", "## 미결"]   # "## 산출물" is optional, so not required here
+KINDS = [("D", "## 결정"), ("U", "## 미결")]   # id kind -> the section that defines it
+DEAD_SECTIONS = ["작업 내용", "미결 의사결정"]  # sections the convention retired
+DEAD_FIELDS = ["성격", "작성"]                  # header fields the convention retired
 
 
 def gaps(index: str) -> set[str]:
-    """README 「결번」 줄의 번호. 가리킬 파일이 없으니 링크를 요구하지 않는다"""
+    """Numbers on the README "결번" (retired) line. They have no file, so no link is required."""
     line = re.search(r"^#+\s*결번.*$", index, re.M)
     return set(re.findall(r"\d+", line.group())) if line else set()
 
 
 def section(text: str, head: str) -> list[str]:
-    """`## <head>` 절의 줄들. 다음 `## ` 에서 닫는다"""
+    """Lines of the `## <head>` section, closed by the next `## `."""
     out, on = [], False
     for l in text.splitlines():
         if l.startswith("## "):
@@ -35,11 +36,11 @@ def section(text: str, head: str) -> list[str]:
 
 
 def ids(lines: list[str], num: str, kind: str) -> tuple[dict[str, bool], list[str]]:
-    """이 로그가 정의한 ID → 그 자리에 추기가 붙었나. 중복 ID 도 같이 돌려준다.
+    """Ids this log defines -> whether a back-annotation sits under them. Also returns duplicate ids.
 
-    불릿이 시작되면 그 ID 의 구간이 열리고, 다음 불릿이나 제목에서 닫힌다.
-    구간 안의 `> **20…` 이 추기다 (들여쓴 것도 같다).
-    자기 번호만 정의로 친다 — 남의 번호가 붙은 불릿은 인용이다
+    A bullet opens the span of its id; the next bullet or heading closes it.
+    A `> **20…` line inside the span is a back-annotation (indented or not).
+    Only ids carrying this log's own number count as definitions; other numbers are citations.
     """
     out, dup, cur = {}, [], None
     for l in lines:
@@ -57,13 +58,13 @@ def ids(lines: list[str], num: str, kind: str) -> tuple[dict[str, bool], list[st
 
 
 def unlabeled(lines: list[str], kind: str) -> list[str]:
-    """ID 가 안 붙은 불릿. 뒤집힘 대조의 손잡이가 없는 줄이다"""
+    """Bullets without an id -- nothing to cite when the decision is later overturned."""
     return [l.strip()[:44] for l in lines
             if l.startswith("- ") and not re.search(rf"\[{kind}\d+-\d+\]", l)]
 
 
 def crossref() -> list[str]:
-    """뒤집혔다고 인용된 결정·미결에 추기가 붙었나 — 전 로그를 걸쳐야 안다"""
+    """Every decision/open item cited as overturned or closed must carry a back-annotation -- needs all logs."""
     defined, annotated, cites = {}, set(), {}
     for f in sorted(LOGS.glob("[0-9]*.md")):
         num, text = f.name.split(".")[0], f.read_text(encoding="utf-8")
@@ -79,7 +80,7 @@ def crossref() -> list[str]:
     bad = []
     for i in sorted(cites.keys() - annotated):
         if defined.get(i) == cites[i]:
-            continue                      # 자기 로그 안의 표현은 인용이 아니다
+            continue                      # a mention inside the defining log is not a citation
         where = defined.get(i)
         bad.append(f"[{i}] — {cites[i]} 가 뒤집었다는데 "
                    + (f"{where} 에 추기가 없다" if where else "정의한 로그가 없다"))
@@ -96,11 +97,10 @@ def check(target: Path) -> list[str]:
         if not re.search(rf"^{re.escape(s)}", text, re.M):
             bad.append(f"골격 누락 — {s}")
 
-    # 로그 번호는 첫 등장에 링크. 대괄호 안에 절·부록이 붙어도 링크로 친다
-    # (`[로그 23 부록 A](...)`). 자기 번호와 결번은 가리킬 파일이 없어 뺀다
+    # A log number must be linked at its first mention; `[로그 23 부록 A](...)` also counts.
+    # The log's own number and retired numbers have no file, so they are exempt.
     linked = {n for n in re.findall(r"\[로그 (\d+)[^\]]*\]\([^)]+\.md\)", text)}
-    # 뒤에 범위 기호(~)나 수량 조사가 붙으면 참조가 아니다 — "로그 9개" · "로그 1~15".
-    # 앞 낱말까지 봐야 아는 "지민 로그 2"(jimin/2)는 정규식으로 못 가른다 — 링크로 넘긴다
+    # A range (~) or a counter suffix after the number is not a reference -- "로그 9개", "로그 1~15".
     seen = set(re.findall(r"로그 (\d+)(?![\d~])(?!\s*[개편건줄])", text))
     for n in sorted(seen - linked - gaps(index) - {num}, key=int):
         bad.append(f"로그 {n} — 링크가 한 번도 안 걸렸다")
@@ -112,8 +112,8 @@ def check(target: Path) -> list[str]:
     if f"]({num}." not in index:
         bad.append(f"목록 미등재 — docs/log/README.md 에 로그 {num} 행이 없다")
 
-    # 규약이 폐기한 절·필드. 판별선 위반 중 고정 문자열로 잡히는 것만 본다
-    # — 절차 절과 산출물 표의 수치는 기준이 매번 달라 사람이 본다
+    # Retired sections/fields: the only boundary violations catchable by fixed strings.
+    # Procedures and numbers in the artifact table vary each time -- a human checks those.
     for name in DEAD_SECTIONS:
         if re.search(rf"^#+ .*{name}", text, re.M):
             bad.append(f"폐지된 절 — `## {name}`")
@@ -121,12 +121,12 @@ def check(target: Path) -> list[str]:
         if re.search(rf"^- \*?\*?{name}\*?\*?\s*:", text, re.M):
             bad.append(f"폐지된 머리말 필드 — `{name}`")
 
-    # ID 는 뒤집힘·닫힘 대조의 손잡이다. 결정과 미결 둘 다 요구한다
+    # Ids are the handle for overturn/close cross-referencing; required in both sections.
     for kind, head in KINDS:
         lines = section(text, head)
-        # 표로 쓰면 아래 셋이 한꺼번에 무너진다 — ID 를 안 달아도 통과하고(unlabeled),
-        # 정의가 crossref 분모에서 빠지고(ids), 추기 구간이 안 열린다. 규약이 불릿을
-        # 전제하므로 받아주지 않고 막는다 (로그 29 가 이 구멍으로 거짓 통과했다)
+        # A table defeats all three checks at once: bullets without ids pass (unlabeled), definitions
+        # drop out of the crossref denominator (ids), and no annotation span opens. The convention
+        # assumes bullets, so tables are rejected outright.
         if any(l.lstrip().startswith("|") for l in lines):
             bad.append(f"{head} 가 표다 — 불릿으로 쓴다 (ID·추기 검사가 비켜간다)")
         got, dup = ids(lines, num, kind)
@@ -140,7 +140,7 @@ def check(target: Path) -> list[str]:
 
 def main() -> int:
     if len(sys.argv) != 2:
-        sys.exit(f"사용: {Path(__file__).name} <로그 파일>")
+        sys.exit(f"usage: {Path(__file__).name} <log file>")
     target = Path(sys.argv[1]).resolve()
 
     bad = check(target)

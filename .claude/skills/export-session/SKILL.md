@@ -1,37 +1,40 @@
 ---
 name: export-session
-description: Claude Code 세션의 대화 원문을 docs/ai_log/ 마크다운으로 내보내는 도구. 보통은 훅이 자동으로 돌리므로 Claude 가 직접 부를 일은 드물다 — 훅이 안 돌았거나 지난 세션 파일을 내보낼 때만.
+description: Export a Claude Code session transcript to docs/ai_log/ as a Markdown conversation log (user prompts and assistant replies only). A UserPromptSubmit hook normally runs it automatically, so invoke this skill only when the hook did not fire or when exporting a past session's file.
 ---
 
-# 세션 대화 전문 내보내기
+# Export session transcript
 
-## 보통은 훅이 한다
+## The hook usually does this
 
-`.claude/settings.json` 의 UserPromptSubmit 훅이 매 프롬프트를 보고, "대화 내보내기 해줘" ·
-"세션 저장해" · "대화 md로" 같은 문구가 있으면 `hook.py` 가 바로 내보낸다. 결과는 Claude 에게
-additionalContext 로 전달되므로 **Claude 는 다시 돌리지 말고 그 결과만 한 줄로 알린다.**
+The UserPromptSubmit hook in `.claude/settings.json` inspects every prompt. When it contains a Korean
+phrase such as "대화 내보내기 해줘", "세션 저장해" or "대화 md로", `hook.py` exports immediately and
+returns the result to Claude as additionalContext. **Claude must not run the export again; it reports
+the result in one line.**
 
-## 무엇을 남기나
+## What the export keeps
 
-**사용자가 화면에서 본 것만** — 사용자 발화와 AI 답변 원문. 도구 호출·도구 결과·AI 내부 사고·
-시스템 리마인더·슬래시 명령은 뺀다. 이메일은 가린다.
+Only what the user saw on screen: user prompts and assistant replies, verbatim. Tool calls, tool
+results, thinking blocks, system reminders and slash-command blocks are dropped. Email addresses are
+masked. The output document is in Korean (headings `## 사용자`, `## AI`) because docs/ are Korean.
 
-## 손으로 돌릴 때 (훅이 안 돌았거나 지난 세션일 때)
+## Running it by hand (hook did not fire, or a past session)
 
 ```bash
-ls -t ~/.claude/projects/-home-young-dev-luckproof-verdict/*.jsonl | head -3   # 세션 파일 찾기
-python3 .claude/skills/export-session/export_session.py <세션 jsonl> docs/ai_log/<단계>_대화전문_<YYYY-MM-DD>.md
+ls -t ~/.claude/projects/-home-young-dev-luckproof-verdict/*.jsonl | head -3   # find the session file
+python3 .claude/skills/export-session/export_session.py <session.jsonl> docs/ai_log/<stage>_대화전문_<YYYY-MM-DD>.md
 ```
 
-출력 이름 규칙은 훅과 같다: `<가장 높은 번호의 workflow 문서 이름에서 "단계" 를 뺀 것>_대화전문_<날짜>.md`.
-같은 날 같은 단계는 덮어쓴다.
+Naming rule, same as the hook: `<stem of the highest-numbered docs/workflow doc, minus "단계">_대화전문_<date>.md`.
+Same stage on the same day overwrites.
 
-## 확인·커밋
+## Verify and commit
 
-출력에서 `@` 와 `KRX_PW=`·`CHATKHU_API_KEY=` 뒤에 실제 값이 없는지 본다. 커밋은 `ai_log:` 접두로 한 단위.
+Check the output for `@` and for real values after `KRX_PW=` or `CHATKHU_API_KEY=`. Commit as one unit
+with the `ai_log:` prefix.
 
-## 한계
+## Limits
 
-- 내보내기를 실행한 프롬프트에 대한 답변은 파일에 없다 (훅이 답변 전에 돈다). 세션 마지막 일로
-  돌리거나 다음 세션에서 지난 세션 파일로 다시 돌린다.
-- `/clear` 는 새 세션 ID 를 만든다.
+- The reply to the prompt that triggered the export is not in the file (the hook runs before the reply).
+  Run it as the last action of a session, or re-run on the previous session's file next time.
+- `/clear` starts a new session id, so one day can have several files.

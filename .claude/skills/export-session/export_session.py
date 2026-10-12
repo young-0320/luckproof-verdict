@@ -1,20 +1,23 @@
-"""Claude Code 세션 기록(JSONL) → docs/ai_log 대화 전문 마크다운
+"""Convert a Claude Code session transcript (JSONL) into a Markdown conversation log for docs/ai_log/.
 
-사용: python3 .claude/skills/export-session/export_session.py <세션 jsonl> <출력 md>
-세션 파일: ~/.claude/projects/-home-young-dev-luckproof-verdict/<세션ID>.jsonl
+Usage: python3 .claude/skills/export-session/export_session.py <session.jsonl> <output.md>
+Session files live in ~/.claude/projects/-home-young-dev-luckproof-verdict/<session-id>.jsonl
 
-변환 규칙: 사용자 발화와 AI 답변(화면에 보인 글)만, 원문 그대로. AI 내부 사고·도구 호출·도구 결과는 뺀다.
-시스템 리마인더·슬래시 명령 블록은 지운다. 이메일 주소는 가린다 (제출물 개인정보 금지).
+Rules: keep only what the user saw on screen -- user prompts and assistant replies, verbatim.
+Drop thinking blocks, tool calls, tool results, system reminders and slash-command blocks.
+Mask email addresses (submission documents must not contain personal data).
+The output document itself stays in Korean because docs/ are Korean.
 """
 import json
 import re
 import sys
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, timezone
 
 KST = timezone(timedelta(hours=9))
 
 
 def clean_user(text: str) -> str:
+    """Strip harness-injected blocks from a user message; return "" if nothing user-written remains."""
     text = re.sub(r"<system-reminder>.*?</system-reminder>", "", text, flags=re.S)
     text = re.sub(r"<local-command-caveat>.*?</local-command-caveat>", "", text, flags=re.S)
     text = re.sub(r"<command-name>.*?</command-name>\s*<command-message>.*?</command-message>\s*<command-args>.*?</command-args>", "", text, flags=re.S)
@@ -26,8 +29,8 @@ def redact(text: str) -> str:
     return re.sub(r"[\w.+-]+@[\w-]+\.[\w.]+", "[이메일 가림]", text)
 
 
-
-def main(src: str, dst: str) -> None:
+def main(src: str, dst: str) -> int:
+    """Write the Markdown log to dst. Returns the number of utterances written."""
     out, session_id, first_ts = [], None, None
     for line in open(src, encoding="utf-8"):
         d = json.loads(line)
@@ -38,14 +41,13 @@ def main(src: str, dst: str) -> None:
         first_ts = first_ts or ts
         stamp = datetime.fromisoformat(ts.replace("Z", "+00:00")).astimezone(KST).strftime("%H:%M") if ts else ""
         content = d["message"].get("content")
-        if isinstance(content, str):
+        if isinstance(content, str):  # plain user prompt
             text = clean_user(content)
             if text:
                 out.append(f"## 사용자 ({stamp})\n\n{text}\n")
             continue
-        for b in content:
-            t = b.get("type")
-            if t == "text" and d["type"] == "assistant":
+        for b in content:  # block list: only assistant text survives; tool_use/tool_result/thinking are dropped
+            if b.get("type") == "text" and d["type"] == "assistant":
                 out.append(f"## AI ({stamp})\n\n{b['text'].strip()}\n")
     day = datetime.fromisoformat(first_ts.replace("Z", "+00:00")).astimezone(KST).strftime("%Y-%m-%d")
     head = (f"# Claude Code 세션 대화 전문 — {day}\n\n"
@@ -55,4 +57,4 @@ def main(src: str, dst: str) -> None:
 
 
 if __name__ == "__main__":
-    print(sys.argv[2], main(sys.argv[1], sys.argv[2]), "blocks")
+    print(sys.argv[2], main(sys.argv[1], sys.argv[2]), "utterances")

@@ -1,32 +1,36 @@
 ---
 name: log
-description: 작업 로그를 쓰거나 고칠 때 — "로그 써줘", "오늘 결정 정리해줘", "설계 결정 남겨", 또는 결정이 내려진 뒤 그 경위를 남겨야 할 때. docs/log/ 서식 규약에 따라 작성하고 목록 등재와 추기까지 한다.
+description: Write or revise a design-decision log in docs/log/ — when the user says "로그 써줘", "오늘 결정 정리해줘", "설계 결정 남겨", or after a decision is made and its rationale must be recorded. Follows the docs/log/FORMAT.md convention, registers the log in the index, and back-annotates overturned decisions.
 ---
 
-# 작업 로그 작성
+# Writing a decision log
 
-## 먼저 읽는다
+## Read first
 
-**`docs/log/FORMAT.md`.** 무엇을 담고 무엇을 담지 않는지, 골격·머리말·절별 규칙이 전부
-거기 있고 **거기가 유일한 출처다.** 이 스킬은 규약을 다시 적지 않는다 — 아래는 규약이
-말하지 않는 것, 즉 **순서와 확인**뿐이다.
+**`docs/log/FORMAT.md`.** It is the single source of truth for what a log contains and omits, the
+skeleton, the header fields and the per-section rules. This skill does not restate the convention;
+below is only what the convention does not say: **order of work and verification.**
 
-## 절차
+## Procedure
 
-1. **번호** — `ls docs/log/` 로 다음 번호를 잡는다. 결번(`docs/log/README.md` 「결번」 줄)은
-   재사용하지 않는다.
-2. **뼈대** — 이 폴더의 `TEMPLATE.md` 로 시작한다.
-3. **본문** — 규약대로 쓴다.
-4. **추기** — 머리말 `관련` 에 적은 로그를 **열어 본다.** 이번 로그가 뒤집거나 닫은 결정이
-   있으면 **그 로그의 그 자리에** 인용구로 추기한다. 닫은 로그에만 적으면 원 로그를 읽는 쪽은
-   끝난 안건을 살아 있는 것으로 읽는다.
-5. **등재** — `docs/log/README.md` 목록 표에 한 줄 추가한다. 가장 잘 빠지는 단계다.
+1. **Number** — `ls docs/log/` to take the next number. Never reuse a retired number (the `결번`
+   line in `docs/log/README.md`).
+2. **Skeleton** — start from `TEMPLATE.md` in this folder. The template and the log body are in
+   Korean; section headings (`## 결정`, `## 근거`, `## 산출물`, `## 미결`) are literal and checked
+   by `check.py`.
+3. **Body** — write per the convention. Decision bullets carry `[D<n>-k]` ids, open-decision bullets
+   carry `[U<n>-k]` ids.
+4. **Back-annotation** — open every log named in the header's `관련` field. If this log overturns or
+   closes a decision there, add a `> **YYYY-MM-DD — …**` quote block *under that bullet in the old
+   log*. Writing only in the new log leaves the old one reading as if the matter were still open.
+5. **Index** — add one row to the table in `docs/log/README.md`. This is the step most often missed.
 
-## 확인
+## Verify
 
 ```bash
-python3 .claude/skills/log/check.py docs/log/<파일>
+python3 .claude/skills/log/check.py docs/log/<file>
 ```
 
-골격 누락 · 링크 안 걸린 로그 번호 · 깨진 링크 · 목록 미등재를 잡는다. 판별선을 지켰는지,
-추기가 **필요한 자리**에 다 붙었는지는 기계가 모른다 — 그건 규약을 보고 사람이 판단한다.
+Catches missing sections, unlinked log numbers, broken links, missing index rows, bullets without
+ids, and overturned ids that lack a back-annotation. Whether the content respects the convention's
+boundary (rationale, rejected options, open decisions — not procedures or results) is a human judgment.

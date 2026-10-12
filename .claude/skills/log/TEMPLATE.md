@@ -7,11 +7,11 @@
 
 ## 결정
 
-<!-- 3~5줄. 불릿마다 ID. 각 줄 끝에 근거 절과 위치 -->
+<!-- 3-5 bullets, each with an id, each ending with the rationale section and location -->
 
 - [D<번호>-1] <결정> — §1 · `<경로>`
 - [D<번호>-2] <결정> (YYYY-MM-DD, <사람>) — §2
-<!-- 옛 결정을 뒤집으면 그 ID 를 인용한다: [D23-2] 뒤집음 -->
+<!-- When overturning an older decision, cite its id: [D23-2] 뒤집음 -->
 
 ## 근거
 
@@ -19,13 +19,13 @@
 
 <후보 · 탈락 이유 · 경위>
 
-<!-- 뒤집히면 그 자리에 붙인다:
-> **YYYY-MM-DD — <무엇이 바뀌었나> (로그 NN).** <내용>
+<!-- When later overturned, append the back-annotation right here:
+> **YYYY-MM-DD — <what changed> (로그 NN).** <details>
 -->
 
 ## 산출물
 
-<!-- 신설·이전이 있을 때만. 수정만이면 이 절을 만들지 않는다 -->
+<!-- Only when something new was created or moved. Omit this section for edits only -->
 
 | # | 산출물 | 위치 |
 | - | ------ | ---- |
@@ -33,6 +33,6 @@
 
 ## 미결
 
-<!-- 미결 "결정"만. ID 를 단다 -->
+<!-- Open *decisions* only (open tasks go to workflow/). Each carries an id -->
 
 - **[U<번호>-1] <미결 결정>** — <무엇이 안 정해졌고 무엇이 있어야 정해지나>
