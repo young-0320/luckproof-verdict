@@ -60,7 +60,7 @@ Luckproof Verdict. 2026 KHU AI Challenge(교내 AI 활용 경진대회) "AI 문�
 
 | 경로 | 용도 | 규칙 |
 | --- | --- | --- |
-| `docs/CONTRIBUTING.md` | 폴더 배치와 문서 4층 구분 | 어디에 쓸지 애매하면 여기 |
+| `CONTRIBUTING.md` | 폴더 배치와 문서 4층 구분 | 어디에 쓸지 애매하면 여기 |
 | `docs/ai_log/N_*.md` | AI 대화 원본 (단계별. 1단계는 ChatKHU 내보내기, 2단계부터 Claude Code 세션 기록을 `scripts/export_session.py`로 변환해 `N_*_대화전문_날짜.md`로 저장) | 원문 그대로. 편집하지 않음 |
 | `docs/ai_log_선별본/N_*.md` | 서식4 제출용 선별본 | 요약 블록 + 프롬프트 원문 + 답변 요지 + 내 판단 + 검증 + 버전 변화 |
 | `docs/workflow/N_*.md` | 단계별 할 일과 완료 기준 | 체크리스트 |

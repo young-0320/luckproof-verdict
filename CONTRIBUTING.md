@@ -7,6 +7,7 @@
 
 ```
 luckproof-verdict/
+├── CONTRIBUTING.md        # 이 문서 — 폴더 배치와 문서 4층 구분
 ├── README.md              # 사람용 입구 — 작품 소개 (서식3의 원천). 선별본과 어긋나면 안 된다
 ├── CLAUDE.md              # 에이전트 작업 방식 — 규칙만. project_context.md 를 @import
 ├── project_context.md     # 지금 상태 · 확정된 결정 · 미결 · 문서 지도. 단계가 바뀌면 갱신
