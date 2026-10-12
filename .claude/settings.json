@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 .claude/skills/export-session/hook.py",
+            "timeout": 30,
+            "statusMessage": "대화 전문 내보내기 확인 중"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -49,12 +49,10 @@ def main(src: str, dst: str) -> None:
                 out.append(f"## AI ({stamp})\n\n{b['text'].strip()}\n")
     day = datetime.fromisoformat(first_ts.replace("Z", "+00:00")).astimezone(KST).strftime("%Y-%m-%d")
     head = (f"# Claude Code 세션 대화 전문 — {day}\n\n"
-            f"- 세션 ID: `{session_id}`\n- 모델: Claude Fable 5.1 (Claude Code)\n"
-            f"- 변환: `.claude/skills/export-session/export_session.py`. 사용자 발화와 AI 답변만 원문 그대로. "
-            f"AI 내부 사고·도구 호출·도구 결과는 제외, 이메일은 가림.\n\n---\n\n")
+            f"- 세션 ID: `{session_id}`\n- 모델: Claude Fable 5.1 (Claude Code)\n\n---\n\n")
     open(dst, "w", encoding="utf-8").write(redact(head + "\n".join(out)))
-    print(dst, len(out), "blocks")
+    return len(out)
 
 
 if __name__ == "__main__":
-    main(sys.argv[1], sys.argv[2])
+    print(sys.argv[2], main(sys.argv[1], sys.argv[2]), "blocks")
