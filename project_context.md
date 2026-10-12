@@ -2,7 +2,7 @@
 
 > 새 세션이 이전 세션과 같은 상태에서 일을 이어 가는 데 필요한 정보만 둔다.
 > 코드·git 이력·README에서 알 수 있는 것은 적지 않는다. 단계가 바뀌거나 결정이 바뀌면 이 파일을 갱신한다.
-> 마지막 갱신: 2026-10-12 (2단계 0·1번 완료, 2~4번 남음)
+> 마지막 갱신: 2026-10-12 (2단계 1번 재결정, KRX 전환 전. 문서 4층 구조 도입)
 
 ## 무엇을 만드나
 
@@ -35,20 +35,20 @@ Luckproof Verdict. 2026 KHU AI Challenge(교내 AI 활용 경진대회) "AI 문�
 ## 지금 어디까지 왔나
 
 - 1단계 문제 정의: 완료. 원본 대화록 + 선별본 있음.
-- 2단계 자료 준비: 0번(ChatKHU 연동)·1번(시세 데이터) 완료. 남은 것은 2번 문헌 확인, 3번 기존 도구 조사, 4번 규제 경계. 할 일은 `docs/workflow/2_자료준비단계.md`.
-- ChatKHU: API Gateway 있음 (Anthropic Messages / OpenAI Chat Completions 호환). 키는 사용자가 ChatKHU 화면에서 직접 발급해야 하며 아직 발급 전. `.env`의 `CHATKHU_API_KEY`로 쓸 예정.
-- 코드: `luckproof/data/fetch.py` 있음 (uv 프로젝트, `uv run python -m luckproof.data.fetch`). `data/prices.duckdb` 수집 완료(355개 코드, 2016-01-04~2026-10-12). 데이터 성질과 거래비용은 `docs/spec/v1_.md`.
+- 2단계 자료 준비: 0번(ChatKHU 연동) 완료. 1번(시세 데이터)은 AI가 혼자 정해 수집한 1차본(시총 상위 350, 네이버 원천)을 폐기하고 재결정함. 결정 경위는 `docs/log/1.data_scope_source_and_llm.md`. 남은 것은 KRX 전환 수집, 2번 문헌, 3번 기존 도구, 4번 규제. 할 일은 `docs/workflow/2_자료준비단계.md`.
+- 재결정된 것 (2026-10-12): 유니버스 = 그 날 기준 KOSPI200 구성 종목(상폐 포함) / 2016-01-04부터 / 지수 KOSPI200·KOSPI·KODEX 200 / 원천 KRX 정보데이터시스템 + pykrx (사용자 로그인) / LLM은 ChatKHU API 호출 전용, 개발은 Claude Code 단일, Gemini 안 씀 / DB 파일 하나에 테이블 넷(초안, 검토 중).
+- ChatKHU: API Gateway 있음 (Anthropic Messages / OpenAI Chat Completions 호환). 키는 사용자가 발급해야 하며 아직 전. `.env`의 `CHATKHU_API_KEY`. 크레딧 기본 4,000 + 요청 시 30,000 추가 가능.
+- 코드: `luckproof/data/fetch.py`는 네이버 기반 1차본. KRX 기반으로 다시 쓸 예정. uv 프로젝트(`uv run`), 의존성 6개 설치됨.
+- 사용자가 해야 할 것: KRX 계정 + `.env`의 `KRX_ID`/`KRX_PW`, ChatKHU 키 + 크레딧 신청.
 
-**2단계에서 생긴 미결 (사용자 결정 필요)**
-- 시세 원천 라이선스: 네이버 금융 차트는 robots.txt 전면 차단. 교내 비영리 용도로 쓰고 서식4에 사실대로 적을지, 공공데이터포털(금융위원회 주식시세정보)로 바꿀지.
-- 대상 범위를 "시가총액 상위 200+150"으로 잡음 (KOSPI200·KOSDAQ150 실제 구성은 KRX 인증 때문에 못 받음). 유지할지.
-- 2026년 증권거래세율 조문 본문 재확인 (법제처 API 응답이 개정 전 문구였음).
-- 위탁수수료 0.015%·슬리피지 0.1% 가정의 출처.
+**미결 (사용자 결정 필요)**: DB 테이블 구성 확정(U1-1), DB 파일 이름(U1-2), 거래비용 출처(U1-4). 상폐 종목 가격 수신 여부(U1-3)는 KRX 계정 후 AI가 테스트.
+
+**작업 방식에서 합의된 것**: 범위·원천·설계 기준은 AI가 혼자 정하지 않는다. 선택지와 추천을 내고 사용자가 고른 뒤 실행한다. 사용자가 직접 받을 수 있는 자료(로그인 필요 데이터)는 "못 받았다"로 끝내지 않고 요청한다.
 
 **알려진 불일치 (고쳐야 함)**
 - README가 A 층만 설명함. B 층(입력 5개, 거부권), 3단계 라벨, 확률 문구를 반영해야 서식3과 서식4가 맞음.
-- README가 `docs/ai-log.md`를 가리키는데 실제 경로는 `docs/ai_log/`.
-- Claude Code 병행 사용 사유가 아직 서식4에 적혀 있지 않음. 사유 초안: "ChatKHU는 문제 정의·설계 토론·전략 변환·설명에 사용. 2단계부터 ChatKHU 토큰 소진으로 데이터 수집·검증·코드 작성은 Claude Code 병행."
+- README가 `docs/ai-log.md`를 가리키는데 실제 경로는 `docs/ai_log/`. README의 데이터 설명(FinanceDataReader, 상폐 미포함)도 재결정에 맞게 고쳐야 함.
+- 서식4 외부 AI 병행 사유: "ChatKHU는 1단계 문제 정의·설계 토론과 앱의 LLM 호출에 사용. 코드 작성·자료 조사·검증은 Claude Code." 아직 서식4에 안 적음.
 - 2단계부터 작업을 Claude Code에서 하므로 ChatKHU처럼 대화 내보내기가 없다. 작업하면서 `docs/ai_log/2_자료준비.md`에 프롬프트·결과·검증을 직접 기록한다.
 
 ## 커밋 규칙
@@ -60,10 +60,11 @@ Luckproof Verdict. 2026 KHU AI Challenge(교내 AI 활용 경진대회) "AI 문�
 
 | 경로 | 용도 | 규칙 |
 | --- | --- | --- |
-| `docs/ai_log/N_*.md` | ChatKHU 대화 원본 (단계별) | 원문 그대로. 편집하지 않음 |
+| `docs/ai_log/N_*.md` | AI 대화 원본 (단계별. 1단계는 ChatKHU 내보내기, 2단계부터 Claude Code 작업 중 직접 기록) | 원문 그대로. 편집하지 않음 |
 | `docs/ai_log_선별본/N_*.md` | 서식4 제출용 선별본 | 요약 블록 + 프롬프트 원문 + 답변 요지 + 내 판단 + 검증 + 버전 변화 |
 | `docs/workflow/N_*.md` | 단계별 할 일과 완료 기준 | 체크리스트 |
-| `docs/spec/` | 설계 문서 | 3단계에서 채움 |
+| `docs/log/N.*.md` | 설계 결정의 의도 (왜 그렇게 정했나·버린 후보·미결) | 규약 `docs/log/FORMAT.md`, 스킬 `/log`, 검사 `.claude/skills/log/check.py` |
+| `docs/spec/` | 설계 자체. 수치와 조건만 건조하게 | 왜 그 값인가는 `docs/log/`로 링크 |
 | `docs/심사기준.md`, `docs/참가자 제출서류*.pdf` | 심사표, 서식1~5 원문 | 판단 기준은 항상 이 PDF |
 | `README.md` | 작품 소개 (서식3의 원천) | 선별본과 내용이 어긋나면 안 됨 |
 
